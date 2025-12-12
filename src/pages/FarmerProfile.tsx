@@ -263,7 +263,7 @@ export default function FarmerProfile() {
                     
                     <div className="flex items-center justify-between mt-2">
                       <p className="font-bold text-primary">
-                        ${product.price.toFixed(2)}
+                        ₹{product.price.toLocaleString('en-IN')}
                         <span className="text-xs font-normal text-muted-foreground">/{product.unit}</span>
                       </p>
                       

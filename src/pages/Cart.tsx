@@ -5,9 +5,58 @@ import { Badge } from '@/components/ui/badge'
 import { useCart } from '@/contexts/CartContext'
 import { Link } from 'react-router-dom'
 import { Minus, Plus, Trash } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/integrations/supabase/client'
+import { useToast } from '@/hooks/use-toast'
+import { useState } from 'react'
 
 export default function Cart() {
   const { items, updateQuantity, removeItem, clear, total } = useCart()
+  const { user } = useAuth()
+  const { toast } = useToast()
+  const [address, setAddress] = useState('')
+  const [placing, setPlacing] = useState(false)
+
+  const placeOrder = async () => {
+    if (!user) {
+      toast({ title: 'Sign in required', variant: 'destructive' })
+      return
+    }
+    if (!address.trim()) {
+      toast({ title: 'Enter delivery address', variant: 'destructive' })
+      return
+    }
+    setPlacing(true)
+    const { data: order, error } = await supabase
+      .from('orders')
+      .insert({
+        user_id: user.id,
+        total_amount: total,
+        status: 'pending',
+        shipping_address: address.trim(),
+      })
+      .select()
+      .single()
+    setPlacing(false)
+    if (error) {
+      toast({ title: 'Order failed', description: error.message, variant: 'destructive' })
+    } else {
+      for (const item of items) {
+        await supabase.from('order_items').insert({
+          order_id: order.id,
+          product_id: item.id.startsWith('sample-') ? null : item.id,
+          farmer_id: null,
+          quantity: item.quantity,
+          unit_price: item.price,
+          total_price: item.price * item.quantity,
+        })
+      }
+      toast({ title: 'Order placed', description: 'We will notify you with updates.' })
+      clear()
+      setAddress('')
+    }
+  }
 
   return (
     <Layout>
@@ -54,7 +103,7 @@ export default function Cart() {
                             <p className="text-sm text-muted-foreground">by {item.farmer_name}</p>
                           )}
                           <Badge variant="secondary" className="mt-2">
-                            ${item.price.toFixed(2)}/{item.unit}
+                            ₹{item.price.toLocaleString('en-IN')}/{item.unit}
                           </Badge>
                         </div>
                         <Button variant="ghost" size="icon" onClick={() => removeItem(item.id)}>
@@ -72,7 +121,7 @@ export default function Cart() {
                           </Button>
                         </div>
                         <div className="font-bold text-primary">
-                          ${(item.price * item.quantity).toFixed(2)}
+                          ₹{(item.price * item.quantity).toLocaleString('en-IN')}
                         </div>
                       </div>
                     </div>
@@ -88,10 +137,19 @@ export default function Cart() {
                 <CardContent>
                   <div className="flex justify-between mb-4">
                     <span className="text-muted-foreground">Subtotal</span>
-                    <span className="font-bold">${total.toFixed(2)}</span>
+                    <span className="font-bold">₹{total.toLocaleString('en-IN')}</span>
+                  </div>
+                  <div className="space-y-2 mb-4">
+                    <Input 
+                      placeholder="Delivery address (street, city, pincode)" 
+                      value={address} 
+                      onChange={(e) => setAddress(e.target.value)} 
+                    />
                   </div>
                   <div className="space-y-2">
-                    <Button className="w-full">Checkout</Button>
+                    <Button className="w-full" onClick={placeOrder} disabled={placing}>
+                      {placing ? 'Placing...' : 'Checkout'}
+                    </Button>
                     <Button variant="outline" className="w-full" onClick={clear}>
                       Clear Cart
                     </Button>

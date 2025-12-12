@@ -171,7 +171,7 @@ export default function Bookings() {
                 </div>
                 <div>
                   <span className="text-muted-foreground">Total:</span>{' '}
-                  <span className="font-medium text-primary">${booking.total_price.toFixed(2)}</span>
+                  <span className="font-medium text-primary">₹{booking.total_price.toLocaleString('en-IN')}</span>
                 </div>
               </div>
             </div>

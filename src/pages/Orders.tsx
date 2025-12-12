@@ -142,7 +142,7 @@ export default function Orders() {
                         <div className="text-right">
                           <p className="text-sm text-muted-foreground">Total</p>
                           <p className="font-bold text-lg text-primary">
-                            ${order.total_amount.toFixed(2)}
+                            ₹{order.total_amount.toLocaleString('en-IN')}
                           </p>
                         </div>
                         <Button variant="outline" size="sm">

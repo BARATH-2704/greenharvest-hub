@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Package, Calendar, Heart, User, Store, Clock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,16 +6,42 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Layout } from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export default function Dashboard() {
   const { user, loading, userRole, farmerStatus } = useAuth();
   const navigate = useNavigate();
+  const [recentOrders, setRecentOrders] = useState<{ id: string; total_amount: number; created_at: string; status: string }[]>([]);
+  const [upcomingBookings, setUpcomingBookings] = useState<{ id: string; booking_date: string; total_price: number; status: string }[]>([]);
 
   useEffect(() => {
     if (!loading && !user) {
       navigate('/auth');
     }
   }, [user, loading, navigate]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return;
+      const { data: orders } = await supabase
+        .from('orders')
+        .select('id, total_amount, created_at, status')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(5);
+      setRecentOrders(orders || []);
+      const today = new Date().toISOString().slice(0,10);
+      const { data: bookings } = await supabase
+        .from('bookings')
+        .select('id, booking_date, total_price, status')
+        .eq('user_id', user.id)
+        .gte('booking_date', today)
+        .order('booking_date', { ascending: true })
+        .limit(5);
+      setUpcomingBookings(bookings || []);
+    };
+    fetchData();
+  }, [user]);
 
   if (loading) {
     return (
@@ -138,13 +164,30 @@ export default function Dashboard() {
               <CardDescription>Your latest purchases</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No orders yet</p>
-                <Button variant="link" asChild className="mt-2">
-                  <Link to="/products">Start Shopping</Link>
-                </Button>
-              </div>
+              {recentOrders.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p>No orders yet</p>
+                  <Button variant="link" asChild className="mt-2">
+                    <Link to="/products">Start Shopping</Link>
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {recentOrders.map((o) => (
+                    <div key={o.id} className="flex items-center justify-between border rounded-md p-3">
+                      <div className="flex items-center gap-2">
+                        <Package className="h-4 w-4 text-primary" />
+                        <span className="font-medium">Order #{o.id.slice(0,8)}</span>
+                        <Badge variant="secondary">{o.status}</Badge>
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        ₹{o.total_amount.toLocaleString('en-IN')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -195,14 +238,31 @@ export default function Dashboard() {
             <CardDescription>Products you've reserved for future dates</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8 text-muted-foreground">
-              <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No upcoming bookings</p>
-              <p className="text-sm mt-1">Pre-book seasonal items up to 3 months in advance</p>
-              <Button variant="link" asChild className="mt-2">
-                <Link to="/products">Browse Available Products</Link>
-              </Button>
-            </div>
+            {upcomingBookings.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No upcoming bookings</p>
+                <p className="text-sm mt-1">Pre-book seasonal items up to 3 months in advance</p>
+                <Button variant="link" asChild className="mt-2">
+                  <Link to="/products">Browse Available Products</Link>
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {upcomingBookings.map((b) => (
+                  <div key={b.id} className="flex items-center justify-between border rounded-md p-3">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-primary" />
+                      <span className="font-medium">{b.booking_date}</span>
+                      <Badge variant="secondary">{b.status}</Badge>
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      ₹{b.total_price.toLocaleString('en-IN')}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

@@ -116,29 +116,63 @@ export default function Products() {
         );
       }
       if (filteredData.length < 10) {
+        const tnCities = ["Chennai","Coimbatore","Madurai","Salem","Erode","Tiruchirappalli","Thanjavur","Kanyakumari","Vellore","Thoothukudi","Dindigul","Karur","Cuddalore","Nagapattinam","Sivaganga"]
+        const tnFarms = ["Delta Agro","Green Valley Farms","Riverbed Organics","Urban Greens Collective","Coastal Harvests","Temple City Farms","Western Ghats Produce","Kaveri Fresh Fields","Marina Farmstead","Uzhavar Nilayam"]
+        const namesBySlug: Record<string, string[]> = {
+          vegetables: ["Carrot","Brinjal","Drumstick","Okra","Tomato","Onion","Potato","Cabbage","Cauliflower","Capsicum","Beetroot","Radish"],
+          fruits: ["Banana","Mango","Guava","Papaya","Sapota","Pomegranate","Jackfruit","Watermelon","Orange","Grapes","Pineapple","Apple"],
+          grains: ["Ponni Rice","Idli Rice","Matta Rice","Basmati Rice","Red Rice","Ragi","Jowar","Bajra","Wheat","Barley","Foxtail Millet","Kodo Millet"],
+          dairy: ["Fresh Cow Milk","Buffalo Milk","Curd","Ghee","Paneer","Buttermilk","Lassi","Flavored Milk","Khoa","Cheese","Butter","Yogurt"],
+          spices: ["Turmeric","Red Chilli","Black Pepper","Coriander","Cumin","Mustard","Fennel","Fenugreek","Cardamom","Clove","Cinnamon","Star Anise"],
+          greens: ["Spinach","Amaranth","Methi","Coriander Leaves","Mint","Curry Leaves","Ponnanganni","Agathi","Mulaikeerai","Vallarai","Murungai Leaves","Arakeerai"],
+          inorganic: ["Refined Sugar","White Rice Polished","Hybrid Tomato","Imported Apple","Processed Cheese","Packaged Curd","Refined Oil","Instant Noodles","Soda Drink","Packaged Biscuits","Processed Paneer","Canned Corn"]
+        }
+        const unitsBySlug: Record<string, string> = {
+          vegetables: "kg",
+          fruits: "kg",
+          grains: "kg",
+          dairy: "ltr",
+          spices: "kg",
+          greens: "bunch",
+        }
+        const basePricesBySlug: Record<string, number> = {
+          vegetables: 60,
+          fruits: 80,
+          grains: 90,
+          dairy: 70,
+          spices: 200,
+          greens: 30,
+          inorganic: 100
+        }
         const targetCategories = selectedCategory
           ? categories.filter(c => c.slug === selectedCategory)
           : categories
         const samples: Product[] = []
         targetCategories.forEach((cat) => {
-          for (let i = 0; i < Math.max(10 - filteredData.length, 10); i++) {
-            const id = `sample-${cat.slug}-${i + 1}`
+          const names = namesBySlug[cat.slug] || [`${cat.name}`]
+          const unit = unitsBySlug[cat.slug] || "kg"
+          const base = basePricesBySlug[cat.slug] || 50
+          for (let i = 0; i < Math.max(12, names.length); i++) {
+            const name = names[i % names.length]
+            const id = `sample-${cat.slug}-${name.toLowerCase().replace(/\\s+/g,'-')}-${i + 1}`
+            const farm = tnFarms[i % tnFarms.length]
+            const city = tnCities[i % tnCities.length]
             samples.push({
               id,
-              name: `${cat.name} ${i + 1}`,
-              description: 'Seasonal fresh produce',
-              price: 2.5 + (i % 5),
-              unit: 'kg',
-              image_url: null,
-              stock_quantity: 100 - i * 2,
+              name,
+              description: `${name} sourced from ${city}, Tamil Nadu`,
+              price: base + (i % 5) * 10,
+              unit,
+              image_url: `https://source.unsplash.com/featured/300x300?${encodeURIComponent(name)}`,
+              stock_quantity: 100 - i,
               category_id: cat.id,
               farmer_id: 'sample',
-              farmers: { farm_name: 'Demo Farm', farm_location: 'Local' },
+              farmers: { farm_name: `${city} ${farm}`, farm_location: city },
               categories: { name: cat.name, slug: cat.slug },
             })
           }
         })
-        filteredData = [...filteredData, ...samples].slice(0, 30)
+        filteredData = [...filteredData, ...samples].slice(0, 60)
       }
       setProducts(filteredData);
     }
@@ -450,9 +484,9 @@ export default function Products() {
                         )}
                       </div>
                       
-                      <div className="flex items-center justify-between mt-2">
+                        <div className="flex items-center justify-between mt-2">
                         <p className="font-bold text-primary">
-                          ${product.price.toFixed(2)}
+                          ₹{product.price.toLocaleString('en-IN')}
                           <span className="text-sm font-normal text-muted-foreground">/{product.unit}</span>
                         </p>
                         

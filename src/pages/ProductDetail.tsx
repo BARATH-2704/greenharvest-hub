@@ -189,6 +189,14 @@ export default function ProductDetail() {
     }
 
     if (!selectedDate || !product) return;
+    if (product.id.startsWith('sample-') || product.farmer_id === 'sample') {
+      toast({
+        title: 'Not available to pre-book',
+        description: 'Please select a real product to pre-book.',
+        variant: 'destructive',
+      });
+      return;
+    }
 
     setIsBooking(true);
     const { error } = await supabase.from('bookings').insert({
@@ -300,7 +308,7 @@ export default function ProductDetail() {
 
             <div className="flex items-baseline gap-2">
               <span className="text-3xl font-bold text-primary">
-                ${product.price.toFixed(2)}
+                ₹{product.price.toLocaleString('en-IN')}
               </span>
               <span className="text-muted-foreground">per {product.unit}</span>
             </div>
@@ -424,7 +432,7 @@ export default function ProductDetail() {
                         <div className="flex justify-between items-center pt-2 border-t">
                           <span className="text-sm text-muted-foreground">Total</span>
                           <span className="font-bold text-lg text-primary">
-                            ${(product.price * bookingQuantity).toFixed(2)}
+                            ₹{(product.price * bookingQuantity).toLocaleString('en-IN')}
                           </span>
                         </div>
                       </div>
@@ -549,7 +557,7 @@ export default function ProductDetail() {
                     </div>
                     <CardContent className="p-3">
                       <h3 className="font-medium text-sm truncate">{related.name}</h3>
-                      <p className="text-primary font-semibold">${related.price.toFixed(2)}</p>
+                      <p className="text-primary font-semibold">₹{related.price.toLocaleString('en-IN')}</p>
                     </CardContent>
                   </Card>
                 </Link>

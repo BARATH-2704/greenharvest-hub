@@ -25,6 +25,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Settings from "./pages/Settings";
 import Cart from "./pages/Cart";
+import AddProduct from "./pages/AddProduct";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,6 +56,7 @@ const App = () => (
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/about" element={<About />} />
               <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
+              <Route path="/farmer/add-product" element={<AddProduct />} />
               <Route path="/farmer-guide" element={<FarmerGuide />} />
               <Route path="/support" element={<Support />} />
               <Route path="/privacy" element={<Privacy />} />

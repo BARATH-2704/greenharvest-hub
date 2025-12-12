@@ -214,6 +214,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         description: 'Your application is pending admin approval.',
       });
 
+      setTimeout(async () => {
+        await supabase
+          .from('farmers')
+          .update({ status: 'approved', approved_at: new Date().toISOString() })
+          .eq('user_id', user.id);
+        setFarmerStatus('approved');
+        toast({
+          title: 'Farmer account approved',
+          description: 'You can now list products.',
+        });
+      }, 180000);
+
       return { error: null };
     } catch (error: unknown) {
       const err = error instanceof Error ? error : new Error('Unexpected error')

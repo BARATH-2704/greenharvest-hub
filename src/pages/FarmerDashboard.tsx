@@ -56,7 +56,7 @@ export default function FarmerDashboard() {
                 </p>
                 <div className="mt-4">
                   <Button asChild>
-                    <Link to="/dashboard">Go to Dashboard</Link>
+                    <Link to="/farmer/add-product">Add Product</Link>
                   </Button>
                 </div>
               </CardContent>
