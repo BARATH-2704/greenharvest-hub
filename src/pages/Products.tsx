@@ -13,6 +13,7 @@ import { Layout } from '@/components/layout/Layout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useCart } from '@/contexts/CartContext';
 
 interface Product {
   id: string;
@@ -59,6 +60,7 @@ export default function Products() {
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
   const { user } = useAuth();
   const { toast } = useToast();
+  const { addItem } = useCart();
 
   useEffect(() => {
     fetchCategories();
@@ -112,6 +114,31 @@ export default function Products() {
           p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.description?.toLowerCase().includes(searchQuery.toLowerCase())
         );
+      }
+      if (filteredData.length < 10) {
+        const targetCategories = selectedCategory
+          ? categories.filter(c => c.slug === selectedCategory)
+          : categories
+        const samples: Product[] = []
+        targetCategories.forEach((cat) => {
+          for (let i = 0; i < Math.max(10 - filteredData.length, 10); i++) {
+            const id = `sample-${cat.slug}-${i + 1}`
+            samples.push({
+              id,
+              name: `${cat.name} ${i + 1}`,
+              description: 'Seasonal fresh produce',
+              price: 2.5 + (i % 5),
+              unit: 'kg',
+              image_url: null,
+              stock_quantity: 100 - i * 2,
+              category_id: cat.id,
+              farmer_id: 'sample',
+              farmers: { farm_name: 'Demo Farm', farm_location: 'Local' },
+              categories: { name: cat.name, slug: cat.slug },
+            })
+          }
+        })
+        filteredData = [...filteredData, ...samples].slice(0, 30)
       }
       setProducts(filteredData);
     }
@@ -436,7 +463,18 @@ export default function Products() {
                               Book
                             </Link>
                           </Button>
-                          <Button size="sm">
+                          <Button size="sm" onClick={() => {
+                            addItem({
+                              id: product.id,
+                              name: product.name,
+                              price: product.price,
+                              unit: product.unit,
+                              quantity: 1,
+                              image_url: product.image_url,
+                              farmer_name: product.farmers?.farm_name,
+                            })
+                            toast({ title: 'Added to cart', description: product.name })
+                          }}>
                             <ShoppingCart className="h-3 w-3" />
                           </Button>
                         </div>

@@ -12,6 +12,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Layout } from '@/components/layout/Layout';
 import { supabase } from '@/integrations/supabase/client';
+import { useCart } from '@/contexts/CartContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
@@ -51,6 +52,7 @@ export default function ProductDetail() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { addItem } = useCart();
   
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
@@ -63,11 +65,29 @@ export default function ProductDetail() {
   const [relatedProducts, setRelatedProducts] = useState<RelatedProduct[]>([]);
 
   useEffect(() => {
-    if (id) {
-      fetchProduct();
-      if (user) {
-        checkWishlist();
+    if (!id) return
+    if (id.startsWith('sample-')) {
+      const name = id.split('-').slice(2).join(' ') || 'Sample Product'
+      const sample: Product = {
+        id,
+        name,
+        description: 'Fresh seasonal produce',
+        price: 3.99,
+        unit: 'kg',
+        image_url: null,
+        stock_quantity: 100,
+        category_id: null,
+        farmer_id: 'sample',
+        farmers: { id: 'sample', farm_name: 'Demo Farm', farm_location: 'Local', farm_description: '', user_id: 'sample' },
+        categories: { name: 'Assorted', slug: 'assorted' }
       }
+      setProduct(sample)
+      setLoading(false)
+      return
+    }
+    fetchProduct();
+    if (user) {
+      checkWishlist();
     }
   }, [id, user]);
 
@@ -142,11 +162,21 @@ export default function ProductDetail() {
   };
 
   const handleAddToCart = () => {
+    if (!product) return
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      unit: product.unit,
+      quantity,
+      image_url: product.image_url,
+      farmer_name: product.farmers?.farm_name,
+    })
     toast({
       title: 'Added to cart',
-      description: `${quantity} ${product?.unit} of ${product?.name} added to your cart.`,
-    });
-  };
+      description: `${quantity} ${product.unit} of ${product.name} added to your cart.`,
+    })
+  }
 
   const handlePreBook = async () => {
     if (!user) {
