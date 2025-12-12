@@ -15,6 +15,13 @@ import FarmerProfile from "./pages/FarmerProfile";
 import Wishlist from "./pages/Wishlist";
 import Orders from "./pages/Orders";
 import Bookings from "./pages/Bookings";
+import HowItWorks from "./pages/HowItWorks";
+import About from "./pages/About";
+import FarmerDashboard from "./pages/FarmerDashboard";
+import FarmerGuide from "./pages/FarmerGuide";
+import Support from "./pages/Support";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +45,13 @@ const App = () => (
             <Route path="/wishlist" element={<Wishlist />} />
             <Route path="/orders" element={<Orders />} />
             <Route path="/bookings" element={<Bookings />} />
+            <Route path="/how-it-works" element={<HowItWorks />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/farmer/dashboard" element={<FarmerDashboard />} />
+            <Route path="/farmer-guide" element={<FarmerGuide />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

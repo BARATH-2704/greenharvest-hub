@@ -124,13 +124,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       return { error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error('Unexpected error')
       toast({
         title: 'Sign up failed',
-        description: error.message,
+        description: err.message,
         variant: 'destructive',
       });
-      return { error };
+      return { error: err };
     }
   };
 
@@ -149,13 +150,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       
       return { error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error('Unexpected error')
       toast({
         title: 'Sign in failed',
-        description: error.message,
+        description: err.message,
         variant: 'destructive',
       });
-      return { error };
+      return { error: err };
     }
   };
 
@@ -213,13 +215,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       return { error: null };
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error('Unexpected error')
       toast({
         title: 'Registration failed',
-        description: error.message,
+        description: err.message,
         variant: 'destructive',
       });
-      return { error };
+      return { error: err };
     }
   };
 

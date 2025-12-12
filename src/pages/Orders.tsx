@@ -17,7 +17,9 @@ interface Order {
   shipping_address: string | null;
 }
 
-const statusConfig: Record<string, { label: string; color: string; icon: any }> = {
+type StatusKey = 'pending' | 'confirmed' | 'processing' | 'ready' | 'completed' | 'cancelled'
+type IconComponent = React.ComponentType<{ className?: string }>
+const statusConfig: Record<StatusKey, { label: string; color: string; icon: IconComponent }> = {
   pending: { label: 'Pending', color: 'bg-yellow-100 text-yellow-800', icon: Clock },
   confirmed: { label: 'Confirmed', color: 'bg-blue-100 text-blue-800', icon: CheckCircle },
   processing: { label: 'Processing', color: 'bg-purple-100 text-purple-800', icon: Package },

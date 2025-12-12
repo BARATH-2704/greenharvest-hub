@@ -31,7 +31,9 @@ interface Booking {
   };
 }
 
-const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: any }> = {
+type BookingStatusKey = 'pending' | 'confirmed' | 'rejected' | 'completed' | 'cancelled'
+type IconComponent = React.ComponentType<{ className?: string }>
+const statusConfig: Record<BookingStatusKey, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; icon: IconComponent }> = {
   pending: { label: 'Pending', variant: 'secondary', icon: Clock },
   confirmed: { label: 'Confirmed', variant: 'default', icon: CheckCircle },
   rejected: { label: 'Rejected', variant: 'destructive', icon: XCircle },
